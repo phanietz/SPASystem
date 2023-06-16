@@ -4,7 +4,7 @@
 
 class Colors{
   public:
-    int control=0; //0=keyboard   1=remote
+    int control=1; //1=Keyboard   2=Infrared   =Bluetooth
   public:
     Colors(); 
     void testColor();
@@ -15,7 +15,7 @@ class Colors{
     void Successful(); //saved successful
     void Move();
     void PushButtom();
-    void Control(); //keyboard or remote
+    void Control(); //keyboard, Infrared remote or Bluetooth remote
     void White();
     void ChangeMoving();
     void info();

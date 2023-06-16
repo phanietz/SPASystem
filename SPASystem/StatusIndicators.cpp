@@ -83,10 +83,12 @@ void Colors::PushButtom(){
 }
 
 void Colors::Control(){
-  if(control == 0){
+  if(control == 1){
     leds[0] = CRGB::Blue; FastLED.show();  
-  }else if(control == 1){
+  }else if(control == 2){
     leds[0] = CRGB::Cyan; FastLED.show();
+  }else if(control == 3){
+    leds[0] = CRGB::Magenta; FastLED.show();
   }
 }
 

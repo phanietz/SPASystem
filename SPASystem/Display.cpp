@@ -479,17 +479,16 @@ bool Display::AskActivateRemoteControl(class USBHost &usb2, unsigned long &keyPr
   while (true) {    
     usb2.Task();
     if (keyPress!=0) {
-      Serial.println(keyPress);   
       switch (keyPress) { 
         case ENTER:  //PLAY to confirm exit and do not save changes
           /***** ACTIVATED REMOTE CONTROL*****/     
           RemoteControl(1);            
-          color.control = 1;
+          color.control = 2;
           return true;
           break;
         case EXIT:  //EQ to ignore, to back (go to screen reset position)
           /***** Not activated *****/
-          color.control = 0;
+          color.control = 1;
           return false;
           break;
       }
@@ -520,17 +519,16 @@ bool Display::AskDeactivateRemoteControl(class USBHost &usb2, unsigned long &key
   while (true) {    
     usb2.Task();
     if (keyPress!=0) {
-      Serial.println(keyPress);   
       switch (keyPress) {     
         case ENTER:  //PLAY to confirm exit and do not save changes
           //***** DEACTIVATED REMOTE CONTROL *****
-          color.control = 0;
+          color.control = 1;
           RemoteControl(2);            
           return false;
           break;
         case EXIT:  //EQ to ignore, to back (go to screen reset position)
           //***** Not deactivated *****
-          color.control = 1;
+          color.control = 2;
           return true;
           break;
       }
@@ -538,45 +536,6 @@ bool Display::AskDeactivateRemoteControl(class USBHost &usb2, unsigned long &key
     keyPress=0;    
   } 
 }
-
-/*bool Display::AskDeactivateRemoteControl(class IRrecv &IRremote, class decode_results &IRresult){
-  //lcd.print("   Do you want to   "); //0
-  //lcd.print("   deactivate the   "); //1
-  //lcd.print("  remote control?   "); //2
-  //lcd.print("                    "); //3
-
-  lcd.clear();
-  lcd.setCursor(0, 0); 
-  lcd.print("   Do you want to   "); //0
-  lcd.setCursor(0, 1);
-  lcd.print("   deactivate the   "); //1
-  lcd.setCursor(0, 2);
-  lcd.print("  remote control?   "); //2
-  lcd.setCursor(0, 3);
-  lcd.print("                    "); //3    
-
-  IRremote.resume(); // Enable receiving of the next value 
-  while (true) {
-    if (IRremote.decode(&IRresult)) {
-      IRremote.resume(); // Enable receiving of the next value
-      switch (IRresult.value) {       
-        case ENTER:  //PLAY to confirm exit and do not save changes
-          //***** DEACTIVATED REMOTE CONTROL *****
-          //color.Control(); //Using keyboard
-          color.control = 0;
-          RemoteControl(2);            
-          return false;
-          break;
-        case EXIT:  //EQ to ignore, to back (go to screen reset position)
-          //***** Not deactivated *****
-          //color.SoftBlue(); //Using remote control
-          color.control = 1;
-          return true;
-          break;
-      }
-    }  
-  }   
-}*/
 
 void Display::RemoteControl(int state){
   //lcd.print("                    "); //0
@@ -602,7 +561,7 @@ void Display::RemoteControl(int state){
     lcd.print("     activated      "); //2
     lcd.setCursor(0, 3);
     lcd.print("                    "); //3
-  }else{
+  }else if(state==2){ //go back to keyboard control
     lcd.setCursor(0, 0); 
     lcd.print("                    "); //0
     lcd.setCursor(0, 1);
@@ -611,6 +570,30 @@ void Display::RemoteControl(int state){
     lcd.print("    deactivated     "); //2
     lcd.setCursor(0, 3);
     lcd.print("                    "); //3    
+  }else if(state==3){
+    lcd.setCursor(0, 0); 
+    lcd.print("                    "); //0
+    lcd.setCursor(0, 1);
+    lcd.print("      RAControl     "); //1
+    lcd.setCursor(0, 2);
+    lcd.print("      connected     "); //2
+    lcd.setCursor(0, 3);
+    lcd.print("                    "); //3    
+    color.Successful(); 
+    color.control = 3;
+
+  }else if(state==4){ //go back to keyboard control
+    lcd.setCursor(0, 0); 
+    lcd.print("                    "); //0
+    lcd.setCursor(0, 1);
+    lcd.print("      RAControl     "); //1
+    lcd.setCursor(0, 2);
+    lcd.print("    disconnected    "); //2
+    lcd.setCursor(0, 3);
+    lcd.print("                    "); //3
+    color.info(); 
+    delay(1000);
+    color.control = 1;
   }
 
   color.Successful();

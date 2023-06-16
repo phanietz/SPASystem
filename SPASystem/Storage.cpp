@@ -62,7 +62,7 @@ byte Storage::Read(unsigned int dataAddres){
   Wire.endTransmission();
   Wire.requestFrom(disk1, 1);
   delay(10);
-  if(Wire.available()){
+  if(Wire.available()){ //////////////////==++!!--*****keep eye, posible error
     data = Wire.read();     
   }  
   return data;

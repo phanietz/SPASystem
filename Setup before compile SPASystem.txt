@@ -1,0 +1,11 @@
+1. make sure do all the config to bluetooth device and knew the bluetooth Adress: 
+	RUN: setup_bluetooth.ino
+
+2. Make sure set to zero the three first addres line of the EEPROM, to avoid read 257.55
+	RUN: setup_EEPROM.ino
+
+3. Copy and paste 'libraries' on:
+	-on Windows:
+		C:\Users\<user>\Documents\Arduino\libraries
+	-on Linux:
+	on MAC

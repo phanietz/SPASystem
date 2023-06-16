@@ -7,6 +7,11 @@ class Display{
     int status;
     const int LCD_COLS = 20;
     const int LCD_ROWS = 4;
+    ///////////////////////////////
+    //flags to have a flow control and recogniced wich is the state of the system
+    //int  motor=0;
+    //bool calibrating=false;
+
   public:
       Display(); 
       void SPA_System();
@@ -30,6 +35,7 @@ class Display{
       bool AskActivateRemoteControl(class USBHost &usb2, unsigned long &keyPress);
       bool AskDeactivateRemoteControl(class USBHost &usb2, unsigned long &keyPress);
       void RemoteControl(int state);
+      
 };
 
 #endif

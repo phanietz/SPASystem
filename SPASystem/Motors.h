@@ -1,7 +1,15 @@
 #ifndef MOTORS_H
 #define MOTORS_H
 #include <Arduino.h>
+//Switches for calibration
+//Motor 1: PIN 40 (it's touched when the sensor is moving down)
+//Motor 2: PIN 43 (it's touched when the sensor is moving backward)
+//Motor 3: PIN 44 (it's touched when the sensor is moving left)
 
+//Switches for end of te rail
+//Motor 1: PIN 41 (it's touched when the sensor is moving up)
+//Motor 2: PIN 42 (it's touched when the sensor is moving forward)
+//Motor 3: PIN 44 (it's touched when the sensor is moving right)
 class Motors{
   private:
     const int num_steps_UP = 40;  //switch 41
