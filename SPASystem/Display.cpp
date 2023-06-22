@@ -592,7 +592,6 @@ void Display::RemoteControl(int state){
     lcd.setCursor(0, 3);
     lcd.print("                    "); //3
     color.info(); 
-    delay(1000);
     color.control = 1;
   }
 

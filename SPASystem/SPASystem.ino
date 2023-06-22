@@ -8,6 +8,7 @@
 #include "RemoteAccessControl.h" //library test
 #include "StatusIndicators.h"
 
+
 //Position 0: 40, 43 y 44
 #define SWITCH_M1_1 40  //brown Switch 1
 #define SWITCH_M1_2 41  //gray Switch 1
@@ -50,7 +51,7 @@ int UserInterface=1;
 
 /////////////
 //variables bluetooth
-String responseAT="";
+String responseAT="", incomingString="";
 char a;
 int touch=0; 
 /*---------------------------------------*/
@@ -176,11 +177,11 @@ void setup() {
   //attachInterrupt(digitalPinToInterrupt(RedButton), RedButtonInterrupt, RISING);  
   //**********ON/OFF IR****************  
   pinMode(RedButton, INPUT_PULLUP);
-  //*********RAControl*****************
+  //*********Bluetooth*****************
   pinMode(ST, INPUT_PULLUP);
+  pinMode(EN, OUTPUT);
+  digitalWrite(EN,LOW); 
   pinMode(15, INPUT_PULLUP); //RX3
-  //pinMode(EN, OUTPUT); //reset Buetooth, State = o
-  //digitalWrite(EN, HIGH); //reset Buetooth, State = o   
   Serial3.begin(38400); // Default communication rate of the Bluetooth module  
 
   //Bluetooth.pruebaRemote(d1); //pruebaaaaa
@@ -218,19 +219,19 @@ void loop() {
                 Serial.println("------------------MOTOR 1:");
                 d1.screenOn(Conveyor, 1, axis1, m1.stepNum);        
                 ButtonKeyboard(1);        
-                break;
+              break;
         
               case CH2:  //motor 2
                 Serial.println("------------------MOTOR 2:");
                 d1.screenOn(LabelsX, 2, axis2, m1.stepNum);
                 ButtonKeyboard(2);        
-                break;
+              break;
         
               case CH3:  //motor 3
                 Serial.println("------------------MOTOR 3:");
                 d1.screenOn(LabelsY, 3, axis3, m1.stepNum);
                 ButtonKeyboard(3);         
-                break; 
+              break; 
             }
             keyPress=0;      
           }else if(digitalRead(RedButton)==false){ //RedButtonValue is ANALOG INPUT
@@ -246,12 +247,10 @@ void loop() {
             UserInterface=3;
             Serial.println("CONNECTED Bluetooth DEVICE");
             d1.RemoteControl(3);
-            delay(500);            
-            screen=1;
-            d1.MainScreen1(axis1, axis2, axis3);            
+            //delay(500); ////*******sincronizar con display
           }
         }      
-        break;
+      break;
 
       case 2:
         ///////////////////////////////////////
@@ -269,19 +268,19 @@ void loop() {
                 Serial.println("------------------MOTOR 1:-----------------");
                 d1.screenOn(Conveyor, 1, axis1, m1.stepNum);        
                 ButtonRemoteControl(1);
-                break;
+              break;
                 
               case CH2:  //motor 2
                 Serial.println("------------------MOTOR 2:-----------------");
                 d1.screenOn(LabelsX, 2, axis2, m1.stepNum);
                 ButtonRemoteControl(2);        
-                break;
+              break;
         
               case CH3:  //motor 3
                 Serial.println("------------------MOTOR 3:-----------------");
                 d1.screenOn(LabelsY, 3, axis3, m1.stepNum);
                 ButtonRemoteControl(3);         
-                break;
+              break;
             }
             key_value = results.value;
             irrecv.resume(); // reset the receiver for the next code 
@@ -296,7 +295,7 @@ void loop() {
             d1.MainScreen1(axis1, axis2, axis3);
           }
         }        
-        break;
+      break;
 
       case 3:
         ///////////////////////////////////////
@@ -306,12 +305,16 @@ void loop() {
         Serial.println(touch);
         responseAT="";
         while(UserInterface==3){
+          Serial.println("on loop 1");
+          delay(50);////*******sincronizar con display
           while(Serial3.available()>0){
             a = char(Serial3.read());
             responseAT += a;
-          }    
+          }
+
           if(responseAT.indexOf(".")!=-1){
-            responseAT=responseAT.substring(0, responseAT.length()-1); //remove \r\n from command string  
+            responseAT=responseAT.substring(0, responseAT.length()-3); //remove ./r/n from command string  
+            Serial.print("    IN loop 1: ");
             Serial.println(responseAT);
             touch=responseAT.toInt();
             responseAT="";
@@ -321,32 +324,40 @@ void loop() {
               Serial.println("------------------MOTOR 1:");
               d1.screenOn(Conveyor, 1, axis1, m1.stepNum);        
               ButtonDisplayTouch(1);        
-              break;
+            break;
       
             case CH2:  //motor 2
               Serial.println("------------------MOTOR 2:");
               d1.screenOn(LabelsX, 2, axis2, m1.stepNum);
               ButtonDisplayTouch(2);        
-              break;
+            break;
       
             case CH3:  //motor 3
               Serial.println("------------------MOTOR 3:");
               d1.screenOn(LabelsY, 3, axis3, m1.stepNum);
               ButtonDisplayTouch(3);         
-              break; 
+            break; 
           }
-            
           if(digitalRead(ST)==false){
             UserInterface=1;
             Serial.println("DISCONECTED Bluetooth DEVICE");
             d1.RemoteControl(4);
-            delay(1000);
+            digitalWrite(EN,HIGH);
+            delay(100);
+            digitalWrite(EN,LOW);
+            /*responseAT="";
+            while(Serial3.available()>0){
+              a = char(Serial3.read());
+              responseAT += a;
+            }
+            Serial.println(responseAT);
+            responseAT="";*/
+            Bluetooth.statusPAIR();
             screen=1;
             d1.MainScreen1(axis1, axis2, axis3);            
           }
-
         }        
-        break;      
+      break;      
     }
     
   }else{
@@ -646,34 +657,38 @@ void ButtonDisplayTouch(int motor){
   responseAT="";
   while (auxMotor==motor) {
     //RAControl has priority
+    Serial.println("on loop ---- 2");
+    delay(500);
     while(Serial3.available()>0){
       a = char(Serial3.read());
       responseAT += a;
-    }    
+    }
+
     if(responseAT.indexOf(".")!=-1){
-      Serial.println(responseAT);
-      responseAT=responseAT.substring(0, responseAT.length()-1); //remove \r\n from command string  
+      responseAT=responseAT.substring(0, responseAT.length()-2); //remove ./r/n from command string  
       touch=responseAT.toInt();
+      responseAT="";
+      Serial.print("    IN loop --2: ");  
       Serial.println(touch);
       switch (touch) {
         case CH1:  //motor 1
           /***** Select motor 1 *****/
           Serial.println("es motor 1");
           motor=1;
-          break;
-                
+        break;
+
         case CH2:  //motor 2
           /***** Select motor 2 *****/
           Serial.println("es motor 2");
           motor=2;
-          break;
-    
+        break;
+
         case CH3:  //motor 3
           /***** Select motor 3 *****/
           Serial.println("es motor 3");
           motor=3;
-          break;
-    
+        break;       
+
         case Down_Forward_Left:
           /***** Down *****/
           // color1.White();
@@ -692,8 +707,8 @@ void ButtonDisplayTouch(int motor){
             s1.WriteFLOAT(3, axis3);
           }
           // color1.Blue();
-          break;
-        
+        break;
+
         case Up_Backward_Right:  
           /***** Up *****/
           // color1.White();
@@ -712,54 +727,43 @@ void ButtonDisplayTouch(int motor){
             s1.WriteFLOAT(3, axis3);
           }
           // color1.Blue();
-          break;
+        break;
     
-        case SLOW:  //VOL- to short step
-          //***** Short *****
-          Serial.println("es slow");
-          if(m1.stepNum!=1){
-            m1.stepNum = m1.Short(m1.stepNum);
-            d1.stepLength(m1.stepNum);
-          }
-          break;
+        case 1001:  //L
+          Serial.println("es L");
+          m1.stepNum=1;
+          m1.stepLength(1);
+          d1.stepLength(1);
+        break;
           
-        case FAST:  //VOL+ to long step
-          //***** Long *****
-          Serial.println("es fast");
-          if(m1.stepNum!=3){
-            m1.stepNum = m1.Long(m1.stepNum);
-            d1.stepLength(m1.stepNum);
-          }
-          break;
+        case 1002:  //M
+          Serial.println("es M");
+          m1.stepNum=2;
+          m1.stepLength(2);
+          d1.stepLength(2);
+        break;
+
+        case 1003:  //H
+          Serial.println("es H");
+          m1.stepNum=3;
+          m1.stepLength(3);
+          d1.stepLength(3);
+        break;
 
         case REBOOT:////////////////////////////////////////////////WORKING ON
           /***** Reboot *****/
           Serial.println("es reboot");
-          keyPress=0; 
-          d1.AskReboot();
-          aux=1;
-          while(aux == 1) {
-            usb.Task();
-            if (keyPress == ENTER) {
-              Reboot_y_n(keyPress, motor);
-              aux=0;
-            }else if (keyPress == EXIT) {             
-              Reboot_y_n(keyPress, motor);
-              aux=0;
-            }
-            keyPress=0;
-          }
+          Reboot_y_n(16761405, motor);
           // color1.Blue();
-          break;
+        break;
           
         case EXIT:  //to Exit, go to Main screen
           /***** Exit *****/
           Serial.println("es exit");
-          d1.MainScreen1(axis1, axis2, axis3);
           motor=0;
-          break;           
+        break;           
       }
-      responseAT="";
+      //responseAT="";
     }
   }
 }
