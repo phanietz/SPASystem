@@ -18,8 +18,8 @@
 #define SWITCH_M3_6 45  //gray Switch 3
 int RECV_PIN = 7;
 int RedButton = 2;
-#define ST 13 //Bluetooth - STATE
-#define EN 12 //Bluetooth - ENABLE
+#define ST 9 //Bluetooth - STATE
+#define EN 10 //Bluetooth - ENABLE
 #define CH1 16753245 //To move motor 1, sensor of conveyor
 #define CH2 16736925 //To move motor 2, sensor of the labels X axis
 #define CH3 16769565 //To move motor 3, sensor of the labels Y axis
@@ -53,7 +53,7 @@ int UserInterface=1;
 //variables bluetooth
 String responseAT="", incomingString="";
 char a;
-int touch=0; 
+long touch=0; 
 /*---------------------------------------*/
 /*-----( Ojects )--- ------------*/  
 IRrecv irrecv(RECV_PIN);
@@ -63,7 +63,7 @@ KeyboardController keyboard(usb);
 Display d1;
 Motors m1;
 Storage s1;
-RAC Bluetooth;
+RAC Bluetooth; //init bluetooth when object is created
 //Colors color1;
 
 /*---------------------------------------*/
@@ -180,14 +180,21 @@ void setup() {
   //*********Bluetooth*****************
   pinMode(ST, INPUT_PULLUP);
   pinMode(EN, OUTPUT);
-  digitalWrite(EN,LOW); 
+  digitalWrite(EN,HIGH); 
   pinMode(15, INPUT_PULLUP); //RX3
   Serial3.begin(38400); // Default communication rate of the Bluetooth module  
 
   //Bluetooth.pruebaRemote(d1); //pruebaaaaa
-  signalMemory=detectSignal(0);
-  UserInterface=1;
-  //delay(1000);
+  signalMemory=detectSignal(0); //0-OnProduction; 1-toDoTest with no memory
+  if(signalMemory==true){
+    Bluetooth.INITIALIZED();
+    d1.MainScreen1(axis1, axis2, axis3); 
+    m1.start();
+    UserInterface=1;
+  }else{
+    d1.LostSignal(); //can't communicate with EEPROM memory
+  }
+  
 }
 
 //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -243,10 +250,23 @@ void loop() {
             }
             screen=1;
             d1.MainScreen1(axis1, axis2, axis3);   
+            
           }else if(digitalRead(ST)==true){       
+            
+            responseAT="";
+            do{
+              delay(100);
+              while(Serial3.available()>0){
+                a = char(Serial3.read());
+                responseAT += a;
+              }
+              Serial.println(responseAT);
+            }while(responseAT.indexOf("OK")==-1); // -1 means "." not found
+          
             UserInterface=3;
-            Serial.println("CONNECTED Bluetooth DEVICE");
             d1.RemoteControl(3);
+            Bluetooth.SendCopy();
+            Serial.println("CONNECTED Bluetooth DEVICE");
             //delay(500); ////*******sincronizar con display
           }
         }      
@@ -303,22 +323,26 @@ void loop() {
         ///////////////////////////////////////
         Serial.print("imprime touch: ");
         Serial.println(touch);
-        responseAT="";
+        
         while(UserInterface==3){
-          Serial.println("on loop 1");
-          delay(50);////*******sincronizar con display
-          while(Serial3.available()>0){
-            a = char(Serial3.read());
-            responseAT += a;
-          }
+          responseAT="";
+          //Serial.println("on loop 1");
+          
+          do{
+            delay(100);
+            while(Serial3.available()>0){
+              a = char(Serial3.read());
+              responseAT += a;
+            }
+            //Serial.println(responseAT);
+          }while(responseAT.indexOf(".")==-1); // -1 means "." not found
 
-          if(responseAT.indexOf(".")!=-1){
-            responseAT=responseAT.substring(0, responseAT.length()-3); //remove ./r/n from command string  
-            Serial.print("    IN loop 1: ");
-            Serial.println(responseAT);
-            touch=responseAT.toInt();
-            responseAT="";
-          }
+          responseAT=responseAT.substring(0, responseAT.length()-3); //remove ./r/n from command string  
+          Serial.print("    IN loop 1: ");
+          //Serial.println(responseAT);
+          touch=responseAT.toInt();
+          Serial.println(touch);
+
           switch (touch) {
             case CH1:  //motor 1
               Serial.println("------------------MOTOR 1:");
@@ -338,25 +362,18 @@ void loop() {
               ButtonDisplayTouch(3);         
             break; 
           }
-          if(digitalRead(ST)==false){
-            UserInterface=1;
-            Serial.println("DISCONECTED Bluetooth DEVICE");
-            d1.RemoteControl(4);
-            digitalWrite(EN,HIGH);
-            delay(100);
-            digitalWrite(EN,LOW);
-            /*responseAT="";
-            while(Serial3.available()>0){
-              a = char(Serial3.read());
-              responseAT += a;
-            }
-            Serial.println(responseAT);
-            responseAT="";*/
-            Bluetooth.statusPAIR();
-            screen=1;
-            d1.MainScreen1(axis1, axis2, axis3);            
-          }
-        }        
+
+        }
+
+        while(digitalRead(ST)==true){}
+
+        if(digitalRead(ST)==false){
+          d1.RemoteControl(4);
+          Serial.println("DISCONECTED Bluetooth DEVICE");
+          responseAT="";
+          screen=1;
+          d1.MainScreen1(axis1, axis2, axis3);            
+        }     
       break;      
     }
     
@@ -657,8 +674,8 @@ void ButtonDisplayTouch(int motor){
   responseAT="";
   while (auxMotor==motor) {
     //RAControl has priority
-    Serial.println("on loop ---- 2");
-    delay(500);
+    //Serial.println("on loop ---- 2");
+    delay(100);
     while(Serial3.available()>0){
       a = char(Serial3.read());
       responseAT += a;
@@ -760,12 +777,23 @@ void ButtonDisplayTouch(int motor){
         case EXIT:  //to Exit, go to Main screen
           /***** Exit *****/
           Serial.println("es exit");
+          do{
+            delay(100);////*******sincronizar con display
+            while(Serial3.available()>0){
+              a = char(Serial3.read());
+              responseAT += a;
+            }
+            Serial.println(responseAT);
+          }while(responseAT.indexOf("+DISC:SUCCESS")==-1); // -1 means "." not found
           motor=0;
+          UserInterface=1;
         break;           
       }
       //responseAT="";
     }
   }
+
+  Serial.print("SALE ");  
 }
 
 ////////////////////////////////////////////////////////////////////////
@@ -779,27 +807,22 @@ bool detectSignal(int s){
   a1 = s1.ReadFLOAT(1);
   a2 = s1.ReadFLOAT(2);
   a3 = s1.ReadFLOAT(3);
-  Serial.print("Axis 1= ");
+  Serial.print("z= ");
   Serial.println(a1);
-  Serial.print("Axis 2= ");  
+  Serial.print("x= ");  
   Serial.println(a2);
-  Serial.print("Axis 3= ");  
+  Serial.print("y= ");  
   Serial.println(a3);
 
   d1.SPA_System();
 
   if(a1 == float(257.55) or a2 == float(257.55) or a3 == float(257.55)){    
-    d1.LostSignal(); //can't communicate with EEPROM memory
     return false;
   }else{
     if(s == 0){
       axis1 = a1;
       axis2 = a2;
       axis3 = a3;
-      d1.MainScreen1(axis1, axis2, axis3);
-      //motors ON
-      //RedButtonValue = analogRead(RedButton);      
-      m1.start();
     }    
     return true;
   }

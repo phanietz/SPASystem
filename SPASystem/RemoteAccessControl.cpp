@@ -6,9 +6,7 @@
 
 //Do bluetooth setup before connect it with the system,
 
-RAC::RAC(){ //Constructor
 
-}
 
 /*void RAC::pruebaRemote(class Display &dis){
 
@@ -18,12 +16,16 @@ RAC::RAC(){ //Constructor
 }
 */
 
-void RAC::statusPAIR(){
-  responseAT=RESET();
+RAC::RAC(){ //Constructor
 
-  responseAT=INIT();
+}
 
-  //responseAT=INQ(false);
+void RAC::INITIALIZED(){
+  responseAT=RESET(false);
+
+  responseAT=INIT(false);
+
+  responseAT=INQ(false);
 
 }
 
@@ -31,7 +33,7 @@ void RAC::statusPAIR(){
 /////////////////////////////////////////////////////////////////////////////////////////////////////
 /////////////////////////////////////////////////////////////////////////////////////////////////////
 /////////////////////////////////////////////////////////////////////////////////////////////////////
-String RAC::RESET(){
+String RAC::RESET(bool mode){
   Serial.println("AT+RESET"); 
   responseAT="";
   do{
@@ -43,17 +45,18 @@ String RAC::RESET(){
       a = char(Serial3.read());
       responseAT += a; 
     }
-    Serial.println(responseAT);
-  }while(responseAT.indexOf("OK")!=-1); //4 para OK
-  
-  //responseAT=responseAT.substring(0, responseAT.length()-2); //remove \r\n from command string    
-  return String(Serial.println(responseAT));
+    if(mode==true){
+      Serial.println(responseAT);
+    }
+  }while(responseAT.indexOf("OK")==-1); //4 para OK
+  //delay(1000); 
+  return String(Serial.println("OK"));
 };
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////
 /////////////////////////////////////////////////////////////////////////////////////////////////////
 /////////////////////////////////////////////////////////////////////////////////////////////////////
-String RAC::INIT(){
+String RAC::INIT(bool mode){
   Serial.println("AT+INIT");
   responseAT="";
   do{
@@ -64,17 +67,19 @@ String RAC::INIT(){
     while(Serial3.available()>0){
       a = char(Serial3.read());
       responseAT += a;    
-      Serial.println(responseAT);
     }
-    Serial.println(responseAT);
-    /*if(responseAT.length()==12){
-      //Serial.println(responseAT);
-      responseAT="OK\r\n";
-    }*/
-  }while(responseAT.indexOf("OK")!=-1 or responseAT.indexOf("17")!=-1); //4 para OK
 
-  //responseAT=responseAT.substring(0, responseAT.length()-2); //remove \r\n from command string    
-  return String(Serial.println(responseAT));
+    if(mode==true){
+      Serial.println(responseAT);
+      Serial.println(responseAT.indexOf("OK"));
+      Serial.println(responseAT.indexOf("17"));
+    }
+    if(responseAT.indexOf("OK")!=-1 or responseAT.indexOf("17")!=-1){
+      responseAT="done";
+    }
+  }while(responseAT.indexOf("done")==-1); //4 para OK
+  //delay(1000);
+  return String(Serial.println("OK"));
 };
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -84,9 +89,7 @@ String RAC::INQ(bool mode){
   Serial.println("AT+INQ"); 
 
   if(mode==true){
-    Serial.println("________________________________");
-    Serial.println("PUT on PAIR mode ...");
-    Serial.println("________________________________");
+    Serial.println("PUT SLAVE ON PAIRABLE mode ...");
   }
 
   responseAT="";
@@ -98,12 +101,19 @@ String RAC::INQ(bool mode){
     while(Serial3.available()>0){
       a = char(Serial3.read());
       responseAT += a;
+    }
+    if(mode==true){
       Serial.println(responseAT);
     }
-    Serial.println(responseAT);
-  }while(responseAT.indexOf("OK")!=-1); //if is 4 means only read OK and not full data
-  
-  //responseAT=responseAT.substring(0, responseAT.length()-2); //remove \r\n from command string
+  }while(responseAT.indexOf("OK")==-1); //if is 4 means only read OK and not full data
 
-  return String(Serial.println(responseAT));
+  return String(Serial.println("OK"));
+};
+
+/////////////////////////////////////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////////////////////////////////
+void RAC::SendCopy(){
+    Serial3.write("COPY\r\n");
+    Serial3.flush();
 };

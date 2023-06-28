@@ -7,12 +7,14 @@ class RAC{
     char a;
     String responseAT="";
   public:
-      RAC(); 
+      RAC(); //init bluetooth
       //void pruebaRemote(class Display &dis);
-      String RESET();
-      String INIT();
+      void INITIALIZED();
+      String RESET(bool mode);
+      String INIT(bool mode);
       String INQ(bool mode);
-      void statusPAIR();
+      void SendCopy();
+      
 };
 
 #endif

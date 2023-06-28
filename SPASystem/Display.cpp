@@ -91,7 +91,7 @@ void Display::SPA_System(){
   lcd.print("                    "); //3   
   
   
-  delay(2500);
+  delay(1500);
 }
 
 void Display::MainScreen1(float axis1, float axis2, float axis3){
@@ -561,6 +561,8 @@ void Display::RemoteControl(int state){
     lcd.print("     activated      "); //2
     lcd.setCursor(0, 3);
     lcd.print("                    "); //3
+    color.Successful();
+    delay(500);
   }else if(state==2){ //go back to keyboard control
     lcd.setCursor(0, 0); 
     lcd.print("                    "); //0
@@ -569,7 +571,9 @@ void Display::RemoteControl(int state){
     lcd.setCursor(0, 2);
     lcd.print("    deactivated     "); //2
     lcd.setCursor(0, 3);
-    lcd.print("                    "); //3    
+    lcd.print("                    "); //3   
+    color.Successful();
+    delay(500); 
   }else if(state==3){
     lcd.setCursor(0, 0); 
     lcd.print("                    "); //0
@@ -595,6 +599,4 @@ void Display::RemoteControl(int state){
     color.control = 1;
   }
 
-  color.Successful();
-  delay(500);
 }

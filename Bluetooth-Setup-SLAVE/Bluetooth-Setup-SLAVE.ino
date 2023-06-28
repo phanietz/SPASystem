@@ -35,7 +35,9 @@ void loop() {
     Serial.write(Serial3.read());
 
   // Read from serial monitor and send to HC05
-  if (Serial.available())
+  if (Serial.available()){
     Serial3.write(Serial.read());
+  }
+    
 
 }
