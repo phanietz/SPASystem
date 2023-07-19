@@ -27,7 +27,8 @@ class Motors{
     String LabelsX="  LABELS SENSOR (X) ", LabelsY="  LABELS SENSOR (Y) ", Conveyor="  CONVEYOR SENSOR   ";
   public: 
     int stepNum=2;
-        
+    int auxMotor=0;
+    
   public:
     Motors();
     void start();

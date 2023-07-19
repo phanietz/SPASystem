@@ -114,6 +114,15 @@ String RAC::INQ(bool mode){
 /////////////////////////////////////////////////////////////////////////////////////////////////////
 /////////////////////////////////////////////////////////////////////////////////////////////////////
 void RAC::SendCopy(){
-    Serial3.write("COPY\r\n");
-    Serial3.flush();
+  Serial3.write("COPY\r\n");
+  Serial3.flush();
+};
+
+void RAC::SendData(String axis){
+  String data="";
+  data=String(axis)+"\r\nCOPY\r\n";
+  Serial3.print(data);
+  Serial3.flush();
+  Serial.println(axis);
+
 };

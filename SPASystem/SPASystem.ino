@@ -23,8 +23,8 @@ int RedButton = 2;
 #define CH1 16753245 //To move motor 1, sensor of conveyor
 #define CH2 16736925 //To move motor 2, sensor of the labels X axis
 #define CH3 16769565 //To move motor 3, sensor of the labels Y axis
-#define Up_Backward_Right 16720605 //To move sensor
-#define Down_Forward_Left 16712445 //To move sensor
+#define UP_FORWARD_LEFT 16720605 //To move sensor
+#define DOWN_BACKWARD_RIGHT 16712445 //To move sensor
 #define ENTER 16761405 //Enter
 #define SLOW 16769055 //Slow  //NEXT to go Right
 #define FAST 16754775 //Fast
@@ -109,7 +109,7 @@ void keyPressed() {
       case 37://left,down,forward
               //****
               //***x      
-              keyPress = Down_Forward_Left;
+              keyPress = DOWN_BACKWARD_RIGHT;
               break;
       case 36://step+
               //****
@@ -130,7 +130,7 @@ void keyPressed() {
       case 33://right,up,backward
               //***x
               //****      
-              keyPress = Up_Backward_Right;
+              keyPress = UP_FORWARD_LEFT;
               break;
       case 32://reset
               //**x*
@@ -265,8 +265,13 @@ void loop() {
           
             UserInterface=3;
             d1.RemoteControl(3);
-            Bluetooth.SendCopy();
+            //Bluetooth.SendCopy();
+            Serial.print("envia axis1 axis2 axis3 and copy");
+            Bluetooth.SendData("{["+String(axis1)+"]["+String(axis2)+"]["+String(axis3)+"]}");
+            
             Serial.println("CONNECTED Bluetooth DEVICE");
+            m1.stepNum = 2;
+            m1.stepLength(m1.stepNum); //to low steps       
             //delay(500); ////*******sincronizar con display
           }
         }      
@@ -346,21 +351,22 @@ void loop() {
           switch (touch) {
             case CH1:  //motor 1
               Serial.println("------------------MOTOR 1:");
-              d1.screenOn(Conveyor, 1, axis1, m1.stepNum);        
+              d1.screenOn(Conveyor, 1, axis1, m1.stepNum); 
+              Serial.println("enviar data of memory to RAControl");  
               ButtonDisplayTouch(1);        
-            break;
+              break;
       
             case CH2:  //motor 2
               Serial.println("------------------MOTOR 2:");
               d1.screenOn(LabelsX, 2, axis2, m1.stepNum);
               ButtonDisplayTouch(2);        
-            break;
+              break;
       
             case CH3:  //motor 3
               Serial.println("------------------MOTOR 3:");
               d1.screenOn(LabelsY, 3, axis3, m1.stepNum);
               ButtonDisplayTouch(3);         
-            break; 
+              break; 
           }
 
         }
@@ -393,8 +399,8 @@ void loop() {
 void ButtonKeyboard(int motor){
 
   screen=2;
-  int auxMotor=motor;
-  while (auxMotor==motor) {
+  m1.auxMotor=motor;
+  while (m1.auxMotor==motor) {
     //RAControl has priority
     if(digitalRead(ST)==true){
       UserInterface=3;
@@ -422,27 +428,8 @@ void ButtonKeyboard(int motor){
             /***** Select motor 3 *****/
             motor=3;
             break;
-      
-          case Down_Forward_Left:
-            /***** Down *****/
-            // color1.White();
-            if(motor==1){                                 
-              axis1 = m1.down(axis1, false);
-              d1.setStep(axis1);
-              s1.WriteFLOAT(1, axis1);
-            }else if(motor==2){
-              axis2 = m1.forward(axis2, false);
-              d1.setStep(axis2);
-              s1.WriteFLOAT(2, axis2);
-            }else if(motor==3){
-              axis3 = m1.left(axis3, false);
-              d1.setStep(axis3 );
-              s1.WriteFLOAT(3, axis3);
-            }
-            // color1.Blue();
-            break;
           
-          case Up_Backward_Right:  
+          case UP_FORWARD_LEFT:  
             /***** Up *****/
             // color1.White();
             if(motor==1){                      
@@ -450,12 +437,31 @@ void ButtonKeyboard(int motor){
               d1.setStep(axis1); 
               s1.WriteFLOAT(1, axis1);
             }else if(motor==2){
+              axis2 = m1.forward(axis2, false);
+              d1.setStep(axis2);
+              s1.WriteFLOAT(2, axis2);
+            }else if(motor==3){
+              axis3 = m1.left(axis3, false);
+              d1.setStep(axis3);
+              s1.WriteFLOAT(3, axis3);
+            }
+            // color1.Blue();
+            break;
+
+          case DOWN_BACKWARD_RIGHT:
+            /***** Down *****/
+            // color1.White();
+            if(motor==1){                                 
+              axis1 = m1.down(axis1, false);
+              d1.setStep(axis1);
+              s1.WriteFLOAT(1, axis1);
+            }else if(motor==2){
               axis2 = m1.backward(axis2, false);
               d1.setStep(axis2);
               s1.WriteFLOAT(2, axis2);
             }else if(motor==3){
               axis3 = m1.right(axis3, false);
-              d1.setStep(axis3);
+              d1.setStep(axis3 );
               s1.WriteFLOAT(3, axis3);
             }
             // color1.Blue();
@@ -528,8 +534,8 @@ void ButtonKeyboard(int motor){
 //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 void ButtonRemoteControl(int motor){
-  int auxMotor=motor;
-  while (auxMotor==motor) {
+  m1.auxMotor=motor;
+  while (m1.auxMotor==motor) {
     //RAControl has priority
     if(digitalRead(ST)==true){
       UserInterface=3;
@@ -568,26 +574,30 @@ void ButtonRemoteControl(int motor){
             motor=3;
             break;
       
-          case Down_Forward_Left:
-            if(motor==1){            
-              axis1 = m1.down(axis1, false);            
-              s1.WriteFLOAT(1, axis1);  
-              d1.setStep(axis1);            
-            }else if(motor==2){
-              axis2 = m1.forward(axis2, false);  
-              s1.WriteFLOAT(2, axis2); 
-              d1.setStep(axis2); 
-            }else if(motor==3){
-              axis3 = m1.left(axis3, false);    
-              s1.WriteFLOAT(3, axis3); 
-              d1.setStep(axis3 ); 
-            }
-            break;
-      
-          case Up_Backward_Right:  
+          case UP_FORWARD_LEFT:  
             /***** Up *****/
-            if(motor==1){
+            // color1.White();
+            if(motor==1){                      
               axis1 = m1.up(axis1, false);
+              d1.setStep(axis1); 
+              s1.WriteFLOAT(1, axis1);
+            }else if(motor==2){
+              axis2 = m1.forward(axis2, false);
+              d1.setStep(axis2);
+              s1.WriteFLOAT(2, axis2);
+            }else if(motor==3){
+              axis3 = m1.left(axis3, false);
+              d1.setStep(axis3);
+              s1.WriteFLOAT(3, axis3);
+            }
+            // color1.Blue();
+            break;
+
+          case DOWN_BACKWARD_RIGHT:
+            /***** Down *****/
+            // color1.White();
+            if(motor==1){                                 
+              axis1 = m1.down(axis1, false);
               d1.setStep(axis1);
               s1.WriteFLOAT(1, axis1);
             }else if(motor==2){
@@ -596,9 +606,10 @@ void ButtonRemoteControl(int motor){
               s1.WriteFLOAT(2, axis2);
             }else if(motor==3){
               axis3 = m1.right(axis3, false);
-              d1.setStep(axis3);
+              d1.setStep(axis3 );
               s1.WriteFLOAT(3, axis3);
             }
+            // color1.Blue();
             break;
       
           case SLOW:  //VOL- to short step
@@ -670,9 +681,8 @@ void ButtonRemoteControl(int motor){
 void ButtonDisplayTouch(int motor){
 
   screen=2;
-  int auxMotor=motor;
   responseAT="";
-  while (auxMotor==motor) {
+  while (motor!=0) {
     //RAControl has priority
     //Serial.println("on loop ---- 2");
     delay(100);
@@ -690,61 +700,63 @@ void ButtonDisplayTouch(int motor){
       switch (touch) {
         case CH1:  //motor 1
           /***** Select motor 1 *****/
-          Serial.println("es motor 1");
+          Serial.println("------------------MOTOR 1:");
+          d1.screenOn(Conveyor, 1, axis1, m1.stepNum);    
           motor=1;
         break;
 
         case CH2:  //motor 2
           /***** Select motor 2 *****/
-          Serial.println("es motor 2");
+          Serial.println("------------------MOTOR 2:");
+          d1.screenOn(LabelsX, 2, axis2, m1.stepNum);  
           motor=2;
         break;
 
         case CH3:  //motor 3
           /***** Select motor 3 *****/
-          Serial.println("es motor 3");
+          Serial.println("------------------MOTOR 3:");
+          d1.screenOn(LabelsY, 3, axis3, m1.stepNum);   
           motor=3;
         break;       
 
-        case Down_Forward_Left:
-          /***** Down *****/
-          // color1.White();
-          Serial.println("es down");
-          if(motor==1){                                 
-            axis1 = m1.down(axis1, false);
-            d1.setStep(axis1);
-            s1.WriteFLOAT(1, axis1);
-          }else if(motor==2){
-            axis2 = m1.forward(axis2, false);
-            d1.setStep(axis2);
-            s1.WriteFLOAT(2, axis2);
-          }else if(motor==3){
-            axis3 = m1.left(axis3, false);
-            d1.setStep(axis3 );
-            s1.WriteFLOAT(3, axis3);
-          }
-          // color1.Blue();
-        break;
+          case UP_FORWARD_LEFT:  
+            /***** Up *****/
+            // color1.White();
+            if(motor==1){                      
+              axis1 = m1.up(axis1, false);
+              d1.setStep(axis1); 
+              s1.WriteFLOAT(1, axis1);
+            }else if(motor==2){
+              axis2 = m1.forward(axis2, false);
+              d1.setStep(axis2);
+              s1.WriteFLOAT(2, axis2);
+            }else if(motor==3){
+              axis3 = m1.left(axis3, false);
+              d1.setStep(axis3);
+              s1.WriteFLOAT(3, axis3);
+            }
+            // color1.Blue();
+            break;
 
-        case Up_Backward_Right:  
-          /***** Up *****/
-          // color1.White();
-          Serial.println("es up");
-          if(motor==1){                      
-            axis1 = m1.up(axis1, false);
-            d1.setStep(axis1); 
-            s1.WriteFLOAT(1, axis1);
-          }else if(motor==2){
-            axis2 = m1.backward(axis2, false);
-            d1.setStep(axis2);
-            s1.WriteFLOAT(2, axis2);
-          }else if(motor==3){
-            axis3 = m1.right(axis3, false);
-            d1.setStep(axis3);
-            s1.WriteFLOAT(3, axis3);
-          }
-          // color1.Blue();
-        break;
+          case DOWN_BACKWARD_RIGHT:
+            /***** Down *****/
+            // color1.White();
+            if(motor==1){                                 
+              axis1 = m1.down(axis1, false);
+              d1.setStep(axis1);
+              s1.WriteFLOAT(1, axis1);
+            }else if(motor==2){
+              axis2 = m1.backward(axis2, false);
+              d1.setStep(axis2);
+              s1.WriteFLOAT(2, axis2);
+            }else if(motor==3){
+              axis3 = m1.right(axis3, false);
+              d1.setStep(axis3 );
+              s1.WriteFLOAT(3, axis3);
+            }
+            // color1.Blue();
+            break;
+
     
         case 1001:  //L
           Serial.println("es L");
@@ -789,7 +801,6 @@ void ButtonDisplayTouch(int motor){
           UserInterface=1;
         break;           
       }
-      //responseAT="";
     }
   }
 

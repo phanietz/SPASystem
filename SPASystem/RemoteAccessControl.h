@@ -14,6 +14,7 @@ class RAC{
       String INIT(bool mode);
       String INQ(bool mode);
       void SendCopy();
+      void SendData(String axis);
       
 };
 
