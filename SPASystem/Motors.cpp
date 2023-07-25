@@ -57,7 +57,7 @@ float Motors::up(float CountSteps, bool unblocked){
     if(aux<=num_steps_UP){
     //if(digitalRead(40) == true){
       small_stepper1.setSpeed(700);      
-      small_stepper1.step(-int(longStep));  
+      small_stepper1.step(int(longStep));  
       //small_stepper1.setSpeed(0);
       CountSteps=aux;
     }else{
@@ -77,7 +77,7 @@ float Motors::down(float CountSteps, bool unblocked){
     if(aux>=0 or unblocked == true){
     //if(digitalRead(40) == true or unblocked == true){
       small_stepper1.setSpeed(700);
-      small_stepper1.step(int(longStep));
+      small_stepper1.step(-int(longStep));
       //small_stepper1.setSpeed(0);
       CountSteps=aux;      
     }

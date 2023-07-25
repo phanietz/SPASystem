@@ -53,7 +53,7 @@ int UserInterface=1;
 //variables bluetooth
 String responseAT="", incomingString="";
 char a;
-long touch=0; 
+long touch=0, bluetoothON=false; 
 /*---------------------------------------*/
 /*-----( Ojects )--- ------------*/  
 IRrecv irrecv(RECV_PIN);
@@ -268,7 +268,7 @@ void loop() {
             //Bluetooth.SendCopy();
             Serial.print("envia axis1 axis2 axis3 and copy");
             Bluetooth.SendData("{["+String(axis1)+"]["+String(axis2)+"]["+String(axis3)+"]}");
-            
+            bluetoothON=true;
             Serial.println("CONNECTED Bluetooth DEVICE");
             m1.stepNum = 2;
             m1.stepLength(m1.stepNum); //to low steps       
@@ -339,7 +339,13 @@ void loop() {
               a = char(Serial3.read());
               responseAT += a;
             }
-            //Serial.println(responseAT);
+            Serial.println(responseAT);
+            
+            if(responseAT.indexOf("DISC:LINK_LOSS")!=-1 or digitalRead(ST)==false){
+              //salida repentina, inesperada
+              responseAT += ".";
+              UserInterface=1;
+            }
           }while(responseAT.indexOf(".")==-1); // -1 means "." not found
 
           responseAT=responseAT.substring(0, responseAT.length()-3); //remove ./r/n from command string  
@@ -371,14 +377,13 @@ void loop() {
 
         }
 
-        while(digitalRead(ST)==true){}
-
         if(digitalRead(ST)==false){
           d1.RemoteControl(4);
           Serial.println("DISCONECTED Bluetooth DEVICE");
+          bluetoothON=false;
           responseAT="";
           screen=1;
-          d1.MainScreen1(axis1, axis2, axis3);            
+          d1.MainScreen1(axis1, axis2, axis3);         
         }     
       break;      
     }
@@ -719,43 +724,43 @@ void ButtonDisplayTouch(int motor){
           motor=3;
         break;       
 
-          case UP_FORWARD_LEFT:  
-            /***** Up *****/
-            // color1.White();
-            if(motor==1){                      
-              axis1 = m1.up(axis1, false);
-              d1.setStep(axis1); 
-              s1.WriteFLOAT(1, axis1);
-            }else if(motor==2){
-              axis2 = m1.forward(axis2, false);
-              d1.setStep(axis2);
-              s1.WriteFLOAT(2, axis2);
-            }else if(motor==3){
-              axis3 = m1.left(axis3, false);
-              d1.setStep(axis3);
-              s1.WriteFLOAT(3, axis3);
-            }
-            // color1.Blue();
-            break;
+        case UP_FORWARD_LEFT:  
+          /***** Up *****/
+          // color1.White();
+          if(motor==1){                      
+            axis1 = m1.up(axis1, false);
+            d1.setStep(axis1); 
+            s1.WriteFLOAT(1, axis1);
+          }else if(motor==2){
+            axis2 = m1.forward(axis2, false);
+            d1.setStep(axis2);
+            s1.WriteFLOAT(2, axis2);
+          }else if(motor==3){
+            axis3 = m1.left(axis3, false);
+            d1.setStep(axis3);
+            s1.WriteFLOAT(3, axis3);
+          }
+          // color1.Blue();
+        break;
 
-          case DOWN_BACKWARD_RIGHT:
-            /***** Down *****/
-            // color1.White();
-            if(motor==1){                                 
-              axis1 = m1.down(axis1, false);
-              d1.setStep(axis1);
-              s1.WriteFLOAT(1, axis1);
-            }else if(motor==2){
-              axis2 = m1.backward(axis2, false);
-              d1.setStep(axis2);
-              s1.WriteFLOAT(2, axis2);
-            }else if(motor==3){
-              axis3 = m1.right(axis3, false);
-              d1.setStep(axis3 );
-              s1.WriteFLOAT(3, axis3);
-            }
-            // color1.Blue();
-            break;
+        case DOWN_BACKWARD_RIGHT:
+          /***** Down *****/
+          // color1.White();
+          if(motor==1){                                 
+            axis1 = m1.down(axis1, false);
+            d1.setStep(axis1);
+            s1.WriteFLOAT(1, axis1);
+          }else if(motor==2){
+            axis2 = m1.backward(axis2, false);
+            d1.setStep(axis2);
+            s1.WriteFLOAT(2, axis2);
+          }else if(motor==3){
+            axis3 = m1.right(axis3, false);
+            d1.setStep(axis3 );
+            s1.WriteFLOAT(3, axis3);
+          }
+          // color1.Blue();
+        break;
 
     
         case 1001:  //L
@@ -783,6 +788,7 @@ void ButtonDisplayTouch(int motor){
           /***** Reboot *****/
           Serial.println("es reboot");
           Reboot_y_n(16761405, motor);
+
           // color1.Blue();
         break;
           
@@ -797,10 +803,17 @@ void ButtonDisplayTouch(int motor){
             }
             Serial.println(responseAT);
           }while(responseAT.indexOf("+DISC:SUCCESS")==-1); // -1 means "." not found
+          bluetoothON=false;
           motor=0;
           UserInterface=1;
         break;           
       }
+    }
+
+    if(digitalRead(ST)==false){ //salida repentina, inesperada
+      UserInterface=1;
+      motor=0;
+      bluetoothON=false;
     }
   }
 
@@ -856,7 +869,11 @@ void Reboot_y_n(unsigned long answer, int motor){
               while(digitalRead(SWITCH_M1_1)==true){
                 axis1 = m1.down(axis1, true);              
               }
-      
+
+              if(bluetoothON==true){
+                Bluetooth.SendCopy();
+              }
+
               //**take the last position saved from the storage
               last = s1.ReadFLOAT(motor);
               
@@ -870,9 +887,14 @@ void Reboot_y_n(unsigned long answer, int motor){
       
               axis1=last;
               d1.successful(2);
+
+              if(bluetoothON==true){
+                Bluetooth.SendCopy();
+              }
+
               d1.screenOn(Conveyor, 1, axis1, m1.stepNum);
             
-            break;
+          break;
             
           case 2:
               //**go to position 0            
@@ -881,6 +903,10 @@ void Reboot_y_n(unsigned long answer, int motor){
                 axis2 = m1.backward(axis2, true);              
               }
       
+              if(bluetoothON==true){
+                Bluetooth.SendCopy();
+              }
+
               //**take the last position saved from the storage
               last = s1.ReadFLOAT(motor);
               
@@ -894,6 +920,11 @@ void Reboot_y_n(unsigned long answer, int motor){
               }
               axis2=last;
               d1.successful(2);
+
+              if(bluetoothON==true){
+                Bluetooth.SendCopy();
+              }
+
               d1.screenOn(LabelsX, 2, axis2, m1.stepNum);
             
             break;
@@ -903,7 +934,11 @@ void Reboot_y_n(unsigned long answer, int motor){
               while(digitalRead(SWITCH_M3_5)==true){
                 axis3 = m1.right(axis3, true);
               }
-      
+
+              if(bluetoothON==true){
+                Bluetooth.SendCopy();
+              }
+
               //**take the last position saved from the storage
               last = s1.ReadFLOAT(motor);
               
@@ -917,8 +952,13 @@ void Reboot_y_n(unsigned long answer, int motor){
               
               axis3=last;
               d1.successful(2);
+      
+              if(bluetoothON==true){
+                Bluetooth.SendCopy();
+              }
+              
               d1.screenOn(LabelsY, 3, axis3, m1.stepNum);        
-            break;
+          break;
         }
       break;
 
