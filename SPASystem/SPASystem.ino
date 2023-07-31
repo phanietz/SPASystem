@@ -318,6 +318,28 @@ void loop() {
             }            
             screen=1;
             d1.MainScreen1(axis1, axis2, axis3);
+          }else if(digitalRead(ST)==true){       
+            
+            responseAT="";
+            do{
+              delay(100);
+              while(Serial3.available()>0){
+                a = char(Serial3.read());
+                responseAT += a;
+              }
+              Serial.println(responseAT);
+            }while(responseAT.indexOf("OK")==-1); // -1 means "." not found
+          
+            UserInterface=3;
+            d1.RemoteControl(3);
+            //Bluetooth.SendCopy();
+            Serial.print("envia axis1 axis2 axis3 and copy");
+            Bluetooth.SendData("{["+String(axis1)+"]["+String(axis2)+"]["+String(axis3)+"]}");
+            bluetoothON=true;
+            Serial.println("CONNECTED Bluetooth DEVICE");
+            m1.stepNum = 2;
+            m1.stepLength(m1.stepNum); //to low steps       
+            //delay(500); ////*******sincronizar con display
           }
         }        
       break;
@@ -537,13 +559,6 @@ void ButtonRemoteControl(int motor){
   while (m1.auxMotor==motor) {
     //RAControl has priority
     if(digitalRead(ST)==true){
-      /*UserInterface=3;
-      Serial.println("CONNECTED Bluetooth DEVICE");
-      d1.RemoteControl(3);
-      delay(500);            
-      screen=1;
-      d1.MainScreen1(axis1, axis2, axis3);     */
-      UserInterface=1;
       motor=0;       
     }else{    
 
