@@ -408,12 +408,6 @@ void ButtonKeyboard(int motor){
   while (m1.auxMotor==motor) {
     //RAControl has priority
     if(digitalRead(ST)==true){
-      UserInterface=3;
-      Serial.println("CONNECTED Bluetooth DEVICE");
-      d1.RemoteControl(3);
-      delay(500);            
-      screen=1;
-      d1.MainScreen1(axis1, axis2, axis3);     
       motor=0;       
     }else{
       usb.Task();
@@ -543,12 +537,13 @@ void ButtonRemoteControl(int motor){
   while (m1.auxMotor==motor) {
     //RAControl has priority
     if(digitalRead(ST)==true){
-      UserInterface=3;
+      /*UserInterface=3;
       Serial.println("CONNECTED Bluetooth DEVICE");
       d1.RemoteControl(3);
       delay(500);            
       screen=1;
-      d1.MainScreen1(axis1, axis2, axis3);     
+      d1.MainScreen1(axis1, axis2, axis3);     */
+      UserInterface=1;
       motor=0;       
     }else{    
 
