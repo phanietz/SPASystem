@@ -890,11 +890,23 @@ void Reboot_y_n(unsigned long answer, int motor){
               //**go to the last position saved        
               temp=0;
               d1.Reboot_LastPosition(last, temp);          
-              while(temp < last){          
-                temp = m1.up(temp, true); 
-                d1.rebootPosition(temp);
+              while(temp < last){
+                if(digitalRead(SWITCH_M1_2)){
+                  temp = m1.up(temp, true); 
+                  d1.rebootPosition(temp);
+                }else{
+                  Serial.println("last position saved was incorrectly, the physical position didn't match with the position saved");
+                  Serial.print("before: ");
+                  Serial.println(last);
+                  Serial.print("now: ");
+                  Serial.println(temp);
+                  last = temp;
+                  //**save the last position to the storage
+                  s1.WriteFLOAT(1, last);
+                  break;
+                }
               }
-      
+
               axis1=last;
               d1.successful(2);
 
@@ -924,10 +936,22 @@ void Reboot_y_n(unsigned long answer, int motor){
               temp=0;
               d1.Reboot_LastPosition(last, temp);  
               while(temp < last){
-                //temp = m1.backward(temp, true); 
-                temp = m1.forward(temp, true); 
-                d1.rebootPosition(temp);
+                if(digitalRead(SWITCH_M2_3)){
+                  temp = m1.forward(temp, true); 
+                  d1.rebootPosition(temp);
+                }else{
+                  Serial.println("last position saved was incorrectly, the physical position didn't match with the position saved");
+                  Serial.print("before: ");
+                  Serial.println(last);
+                  Serial.print("now: ");
+                  Serial.println(temp);
+                  last = temp;
+                  //**save the last position to the storage
+                  s1.WriteFLOAT(2, last);
+                  break;
+                }
               }
+
               axis2=last;
               d1.successful(2);
 
@@ -956,10 +980,22 @@ void Reboot_y_n(unsigned long answer, int motor){
               temp=0;
               d1.Reboot_LastPosition(last, temp);  
               while(temp < last){
-                temp = m1.left(temp, true); 
-                d1.rebootPosition(temp);
+                if(digitalRead(SWITCH_M3_6)){
+                  temp = m1.left(temp, true); 
+                  d1.rebootPosition(temp);
+                }else{
+                  Serial.println("last position saved was incorrectly, the physical position didn't match with the position saved");
+                  Serial.print("before: ");
+                  Serial.println(last);
+                  Serial.print("now: ");
+                  Serial.println(temp);
+                  last = temp;
+                  //**save the last position to the storage
+                  s1.WriteFLOAT(3, last);
+                  break;
+                }
               }
-              
+
               axis3=last;
               d1.successful(2);
       
