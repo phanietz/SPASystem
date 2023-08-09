@@ -5,17 +5,18 @@
 #include "IRremote2.h"
 #include "Storage.h"
 #include <KeyboardController.h>
-#include "RemoteAccessControl.h" //library test
+#include "RemoteAccessControl.h"
 #include "StatusIndicators.h"
 
 
 //Position 0: 40, 43 y 44
-#define SWITCH_M1_1 40  //brown Switch 1
-#define SWITCH_M1_2 41  //gray Switch 1
-#define SWITCH_M2_3 42  //brown Switch 2
-#define SWITCH_M2_4 43  //gray Switch 2
-#define SWITCH_M3_5 44  //brown Switch 3
-#define SWITCH_M3_6 45  //gray Switch 3
+//End of pin wheel: 41, 42 Y 45
+#define SWITCH_M1_1 40  //brown Switch 2 DOWN Z2
+#define SWITCH_M1_2 41  //gray Switch 1 UP Z1
+#define SWITCH_M2_3 42  //brown Switch 1 FORDWARD X1
+#define SWITCH_M2_4 43  //gray Switch 2 BACKWARD X2
+#define SWITCH_M3_5 44  //brown Switch 2 RIGHT Y2
+#define SWITCH_M3_6 45  //gray Switch 1 LEFT Y1
 int RECV_PIN = 7;
 int RedButton = 2;
 #define ST 9 //Bluetooth - STATE
@@ -63,7 +64,7 @@ KeyboardController keyboard(usb);
 Display d1;
 Motors m1;
 Storage s1;
-RAC Bluetooth; //init bluetooth when object is created
+RAC Bluetooth;
 //Colors color1;
 
 /*---------------------------------------*/
@@ -194,7 +195,7 @@ void setup() {
   }else{
     d1.LostSignal(); //can't communicate with EEPROM memory
   }
-  
+
 }
 
 //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -262,12 +263,48 @@ void loop() {
               }
               Serial.println(responseAT);
             }while(responseAT.indexOf("OK")==-1); // -1 means "." not found
-          
+
             UserInterface=3;
             d1.RemoteControl(3);
-            //Bluetooth.SendCopy();
             Serial.print("envia axis1 axis2 axis3 and copy");
-            Bluetooth.SendData("{["+String(axis1)+"]["+String(axis2)+"]["+String(axis3)+"]}");
+            String z1="", z2="", x1="", x2="", y1="", y2="";
+
+
+            if(digitalRead(SWITCH_M1_1) == false){ //40 Z2 DOWN
+              z2=";1"; //end of pin wheel
+            }else{
+              z2=";0";  //it not the end of pin wheel
+            }
+            if(digitalRead(SWITCH_M1_2) == false){ //41 Z1 UP
+              z1=";1"; //end of pin wheel
+            }else{
+              z1=";0";  //it not the end of pin wheel
+            }
+
+            if(digitalRead(SWITCH_M2_4) == false){ //43 X2 BACKWARD
+              x2=";1"; //end of pin wheel
+            }else{
+              x2=";0";  //it not the end of pin wheel
+            }
+            if(digitalRead(SWITCH_M2_3) == false){ //42 X1 FORDWARD
+              x1=";1"; //end of pin wheel
+            }else{
+              x1=";0";  //it not the end of pin wheel
+            }
+
+            if(digitalRead(SWITCH_M3_5) == false){ //44 Y2 RIGHT
+              y2=";1";  //it not the end of pin wheel
+            }else{
+              y2=";0";  //it not the end of pin wheel
+            }  
+            if(digitalRead(SWITCH_M3_6) == false){ //45 Y1 LEFT
+              y1=";1";  //it not the end of pin wheel
+            }else{
+              y1=";0";  //it not the end of pin wheel
+            }  
+
+            Bluetooth.SendData("{["+String(axis1)+z1+z2+"]["+String(axis2)+x1+x2+"]["+String(axis3)+y1+y2+"]}");
+            //Bluetooth.SendData("{["+String(axis1)+";8"+";7"+"]["+String(axis2)+";6"+";2"+"]["+String(axis3)+";4"+";3"+"]}");
             bluetoothON=true;
             Serial.println("CONNECTED Bluetooth DEVICE");
             m1.stepNum = 2;

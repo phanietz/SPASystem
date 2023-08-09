@@ -14,7 +14,7 @@ class Storage{
     void Write(unsigned int dataAddres, byte dataVal);
     float ReadFLOAT(int motor);
     byte Read(unsigned int dataAddres);
-    bool detectSignal();
+    //bool DetectSignal();
 };
 
 

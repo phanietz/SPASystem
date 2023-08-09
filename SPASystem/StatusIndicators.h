@@ -7,7 +7,7 @@ class Colors{
     int control=1; //1=Keyboard   2=Infrared   =Bluetooth
   public:
     Colors(); 
-    void testColor();
+    void TestColor();
     void WeatherTech();
     void Error();
     void Warning(); //when the motor go back
@@ -18,7 +18,7 @@ class Colors{
     void Control(); //keyboard, Infrared remote or Bluetooth remote
     void White();
     void ChangeMoving();
-    void info();
+    void Info();
 };
 
 #endif

@@ -11,7 +11,7 @@ Colors::Colors(){ //Constructor
   FastLED.setBrightness(255); 
 }
 
-void Colors::testColor(){
+void Colors::TestColor(){
   /*leds[0] = CRGB::FloralWhite; FastLED.show(); delay(4000);
   leds[0] = CRGB::Black; FastLED.show(); delay(800);
   leds[0] = CRGB::Cyan; FastLED.show(); delay(4000);
@@ -104,6 +104,6 @@ void Colors::ChangeMoving(){
     
 }
 
-void Colors::info(){
+void Colors::Info(){
   leds[0] = CRGB::LightCoral; FastLED.show();
 }

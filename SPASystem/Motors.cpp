@@ -4,6 +4,7 @@
 #include "Motors.h"
 #include "Stepper.h"
 #include "StatusIndicators.h" //to get acces control variable
+#include "RemoteAccessControl.h"
 #define CH1 16753245 //To move motor 1, sensor of conveyor
 #define CH2 16736925 //To move motor 2, sensor of the labels X axis
 #define CH3 16769565 //To move motor 3, sensor of the labels Y axis
@@ -25,6 +26,7 @@ Stepper small_stepper1(STEPS, 22, 24, 23, 25); // In1, In2, In3, In4 in the sequ
 Stepper small_stepper2(STEPS, 26, 28, 27, 29); // In1, In2, In3, In4 in the sequence 1-3-2-4
 Stepper small_stepper3(STEPS, 30, 32, 31, 33); // In1, In2, In3, In4 in the sequence 1-3-2-4
 Colors color2;
+RAC Blue;
 
 Motors::Motors(){
   //small_stepper1.step(1);
@@ -50,16 +52,14 @@ void Motors::start(){
 float Motors::up(float CountSteps, bool unblocked){
 
   if(digitalRead(41) == false and unblocked == false){
-    Serial.println("It's on the limit");                        
+    Serial.println("It's on the limit");     
+    Blue.SendEndPinWheel(1,1); //(MOTOR,ENDPINWHEEL)  
   }else{
+    Blue.SendEndPinWheel(1,0); //(MOTOR,ENDPINWHEEL)
     aux=CountSteps+lenght;
-    if(digitalRead(41) == true){
-      small_stepper1.setSpeed(700);      
-      small_stepper1.step(int(longStep));  
-      CountSteps=aux;
-    }else{
-      Serial.println("limit");  
-    }
+    small_stepper1.setSpeed(700);      
+    small_stepper1.step(int(longStep));  
+    CountSteps=aux;
   }
   Serial.println(CountSteps);
   return CountSteps;
@@ -69,12 +69,14 @@ float Motors::down(float CountSteps, bool unblocked){
 
   if(digitalRead(40) == false and unblocked == false){
     Serial.println("It's on position 0");
+    Blue.SendEndPinWheel(2,1); //(MOTOR,ENDPINWHEEL)  
   }else{
+    Blue.SendEndPinWheel(2,0); //(MOTOR,ENDPINWHEEL)  
     aux=CountSteps-lenght;
     if(aux>=0 or unblocked == true){
       small_stepper1.setSpeed(700);
       small_stepper1.step(-int(longStep));
-      CountSteps=aux;      
+      CountSteps=aux;
     }
   }
   Serial.println(CountSteps);
@@ -90,15 +92,13 @@ float Motors::forward(float CountSteps, bool unblocked){
 
     if(digitalRead(42) == false and unblocked == false){
       Serial.println("It's on the limit");
+      Blue.SendEndPinWheel(3,1);  //(MOTOR,ENDPINWHEEL) 
     }else{
+      Blue.SendEndPinWheel(3,0);  //(MOTOR,ENDPINWHEEL) 
       aux=CountSteps+lenght;
-      if(digitalRead(42) == true){
-        small_stepper2.setSpeed(700);
-        small_stepper2.step(-int(longStep));
-        CountSteps=aux;
-      }else{
-        Serial.println("limit");  
-      }
+      small_stepper2.setSpeed(700);
+      small_stepper2.step(-int(longStep));
+      CountSteps=aux;
     }
     Serial.println(CountSteps);
     return CountSteps;    
@@ -107,11 +107,12 @@ float Motors::forward(float CountSteps, bool unblocked){
 float Motors::backward(float CountSteps, bool unblocked){
 
   if(digitalRead(43) == false and unblocked == false){
-    Serial.println("It's on position 0");                        
+    Serial.println("It's on position 0");
+    Blue.SendEndPinWheel(4,1);  //(MOTOR,ENDPINWHEEL)              
   }else{ 
+    Blue.SendEndPinWheel(4,0);  //(MOTOR,ENDPINWHEEL) 
     aux=CountSteps-lenght;
     if(aux>=0 or unblocked == true){
-    //if(digitalRead(43) == true){
       small_stepper2.setSpeed(700); //Max seems to be 700    
       small_stepper2.step(int(longStep));
       CountSteps=aux;
@@ -129,16 +130,14 @@ float Motors::backward(float CountSteps, bool unblocked){
 float Motors::left(float CountSteps, bool unblocked){
   //if(CountSteps == 0 and unblocked == false){
   if(digitalRead(45) == false and unblocked == false){
-    Serial.println("It's on the limit");                        
+    Serial.println("It's on the limit"); 
+    Blue.SendEndPinWheel(5,1);  //(MOTOR,ENDPINWHEEL) 
   }else{ 
+    Blue.SendEndPinWheel(5,0);  //(MOTOR,ENDPINWHEEL) 
     aux=CountSteps+lenght;
-    if(digitalRead(45) == true){  
-      small_stepper3.setSpeed(700); //Max seems to be 700    
-      small_stepper3.step(int(longStep));
-      CountSteps=aux;
-    }else{
-      Serial.println("limit");  
-    }
+    small_stepper3.setSpeed(700); //Max seems to be 700    
+    small_stepper3.step(int(longStep));
+    CountSteps=aux;
   }
   Serial.println(CountSteps);
   return CountSteps;
@@ -148,12 +147,14 @@ float Motors::right(float CountSteps, bool unblocked){
 
     if(digitalRead(44) == false and unblocked == false){
       Serial.println("It's on position 0");
+      Blue.SendEndPinWheel(6,1);  //(MOTOR,ENDPINWHEEL) 
     }else{
+      Blue.SendEndPinWheel(6,0);  //(MOTOR,ENDPINWHEEL) 
       aux=CountSteps-lenght;
       if(aux>=0 or unblocked == true){
         small_stepper3.setSpeed(700);
         small_stepper3.step(-int(longStep));
-        CountSteps=aux;        
+        CountSteps=aux;
       }
     }
     Serial.println(CountSteps);

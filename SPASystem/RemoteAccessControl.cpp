@@ -26,7 +26,6 @@ void RAC::INITIALIZED(){
   responseAT=INIT(false);
 
   responseAT=INQ(false);
-
 }
 
 
@@ -124,5 +123,33 @@ void RAC::SendData(String axis){
   Serial3.print(data);
   Serial3.flush();
   Serial.println(axis);
+};
 
+void RAC::SendEndPinWheel(int direction, int state){
+  /* 
+    direction:
+        up = 1
+        down = 2
+        forward = 3
+        backward = 4
+        left = 5
+        right = 6
+
+    state: 
+        1 = switch closed
+        0 = switch opened
+  */
+
+  data="";
+  if(state==1){
+    data=String(direction)+"-CLOSE\r\n";
+    Serial3.print(data);
+    Serial3.flush();
+  }
+  if(state==0){
+    data=String(direction)+"-OPEN\r\n";
+    Serial3.print(data);
+    Serial3.flush();
+  }
+  Serial.println(data);
 };

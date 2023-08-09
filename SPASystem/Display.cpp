@@ -78,7 +78,7 @@ void Display::SPA_System(){
   lcd.print("                    "); //3   
 */
 
-  //color.testColor();
+  //color.TestColor();
   color.WeatherTech();  
   
   lcd.setCursor(0, 0); 
@@ -235,7 +235,7 @@ void Display::resetPosition(float axis){
   }
 
   color.PushButtom();
-  color.info();   
+  color.Info();   
   //color.Control();   
 }
 
@@ -595,7 +595,7 @@ void Display::RemoteControl(int state){
     lcd.print("    disconnected    "); //2
     lcd.setCursor(0, 3);
     lcd.print("                    "); //3
-    color.info(); 
+    color.Info(); 
     color.control = 1;
   }
 

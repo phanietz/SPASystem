@@ -6,6 +6,7 @@ class RAC{
   private:
     char a;
     String responseAT="";
+    String data="";
   public:
       RAC(); //init bluetooth
       //void pruebaRemote(class Display &dis);
@@ -15,6 +16,7 @@ class RAC{
       String INQ(bool mode);
       void SendCopy();
       void SendData(String axis);
+      void SendEndPinWheel(int motor, int state);
       
 };
 
